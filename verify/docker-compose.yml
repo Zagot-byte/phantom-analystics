@@ -1,0 +1,8 @@
+services:
+  web:
+    build: .
+    container_name: phantom-verify
+    ports:
+      - "8080:80"
+    volumes:
+      - ../webroot:/var/www/html
