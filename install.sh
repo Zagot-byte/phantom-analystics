@@ -86,6 +86,24 @@ echo "==> Starting services"
 systemctl enable mongod apache2
 systemctl restart mongod
 sleep 2
+
+echo "==> Creating database account"
+php -r '
+$m = new MongoDB\Driver\Manager("mongodb://127.0.0.1:27017");
+$cmd = new MongoDB\Driver\Command([
+    "createUser" => "appdev",
+    "pwd" => "Apricot@Sunset#9",
+    "roles" => [["role" => "root", "db" => "admin"]],
+]);
+$m->executeCommand("admin", $cmd);
+'
+systemctl stop mongod
+sed -i 's/#security:/security:/; s/#   authorization: "enabled"/   authorization: "enabled"/' /etc/mongod.conf
+systemctl start mongod
+sleep 2
+
+echo "==> Applying connection settings"
+sed -i 's/Apricot@Sunset#9/Apricot%40Sunset%239/' "$WEBROOT/config.php"
 systemctl restart apache2
 
 echo "==> Seeding database"
